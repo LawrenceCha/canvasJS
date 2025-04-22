@@ -12,16 +12,57 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastY = 0;
     let textInput = null;
 
-    // Set canvas size
+    // Set canvas size with content preservation
     function resizeCanvas() {
         const rect = container.getBoundingClientRect();
-        canvas.width = rect.width - 40; // Adjust for container padding
-        canvas.height = rect.height - 100; // Adjust for toolbar and padding
+        const newWidth = rect.width - 40;
+        const newHeight = rect.height - 100;
+
+        // Save the current canvas content
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(canvas, 0, 0);
+
+        // Calculate scale factors
+        const scaleX = newWidth / canvas.width;
+        const scaleY = newHeight / canvas.height;
+
+        // Update canvas size
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+
+        // Restore and scale the content
+        ctx.drawImage(
+            tempCanvas,
+            0, 0, tempCanvas.width, tempCanvas.height,
+            0, 0, newWidth, newHeight
+        );
+
+        // Restore drawing settings
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
     }
 
     // Initialize canvas
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+
+    // Debounce function to limit resize events
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Add debounced resize listener
+    window.addEventListener('resize', debounce(resizeCanvas, 250));
 
     // Drawing functions
     function startDrawing(e) {
@@ -67,12 +108,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Text input functions
     function addTextInput(x, y) {
-        // Remove existing text input if any
         if (textInput) {
             textInput.remove();
         }
 
-        // Create new text input
         textInput = document.createElement('input');
         textInput.type = 'text';
         textInput.style.position = 'absolute';
@@ -91,11 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
         textInput.style.borderRadius = '4px';
         textInput.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
 
-        // Add text input to container
         container.appendChild(textInput);
         textInput.focus();
 
-        // Handle text input completion
         textInput.addEventListener('blur', () => {
             if (textInput.value) {
                 ctx.font = `${sizeSlider.value}px Arial`;
@@ -106,14 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
             textInput = null;
         });
 
-        // Handle Enter key
         textInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 textInput.blur();
             }
         });
 
-        // Prevent canvas click event from firing when clicking the text input
         textInput.addEventListener('mousedown', (e) => {
             e.stopPropagation();
         });
@@ -126,14 +161,12 @@ document.addEventListener('DOMContentLoaded', () => {
             tool.classList.add('active');
             currentTool = tool.id;
             
-            // Update cursor based on tool
             if (currentTool === 'text') {
                 canvas.style.cursor = 'text';
             } else {
                 canvas.style.cursor = 'crosshair';
             }
             
-            // Remove text input when switching tools
             if (textInput && currentTool !== 'text') {
                 textInput.remove();
                 textInput = null;
