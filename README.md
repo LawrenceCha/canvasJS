@@ -44,4 +44,4 @@ The application works on all modern browsers that support HTML5 Canvas:
 - Firefox
 - Safari
 - Edge
-- Opera 
+- Opera
