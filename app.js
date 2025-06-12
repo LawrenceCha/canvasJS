@@ -1,19 +1,147 @@
-const canvas = document.querySelector("canvas");
-const ctx = canvas.getContext("2d");
-canvas.width = 800;
-canvas.height = 800;
+// Constants
+const CANVAS_SIZE = 800;
+const DEFAULT_LINE_WIDTH = 5;
+const DEFAULT_FONT = "68px 'Press Start 2P'";
 
-ctx.fillRect(210, 200, 15, 100);
-ctx.fillRect(350, 200, 15, 100);
-ctx.fillRect(260, 200, 60, 200);
+// DOM Elements
+const elements = {
+    canvas: document.getElementById("canvas"),
+    lineWidth: document.getElementById("line-width"),
+    color: document.getElementById("color"),
+    modeBtn: document.getElementById("mode-btn"),
+    eraserBtn: document.getElementById("eraser-btn"),
+    clearBtn: document.getElementById("clear-btn"),
+    saveBtn: document.getElementById("save-btn"),
+    fileInput: document.getElementById("file"),
+    textInput: document.getElementById("text"),
+    colorOptions: Array.from(document.getElementsByClassName("color-option"))
+};
 
-ctx.arc(290, 130, 50, 0, 2 * Math.PI);
-ctx.fill();
+// Canvas setup
+const ctx = elements.canvas.getContext("2d");
+elements.canvas.width = CANVAS_SIZE;
+elements.canvas.height = CANVAS_SIZE;
+ctx.lineWidth = DEFAULT_LINE_WIDTH;
+ctx.lineCap = "round";
 
-ctx.beginPath();
-ctx.arc(270, 130, 7, Math.PI, 2 * Math.PI);
-ctx.arc(310, 130, 7, Math.PI, 2 * Math.PI);
-ctx.fillStyle = "white";
-ctx.fill();
+// State
+const state = {
+    isPainting: false,
+    isFilling: false
+};
 
+// Drawing functions
+const drawing = {
+    start(event) {
+        state.isPainting = true;
+        ctx.beginPath();
+        ctx.moveTo(event.offsetX, event.offsetY);
+    },
+
+    move(event) {
+        if (!state.isPainting) return;
+        
+        ctx.lineTo(event.offsetX, event.offsetY);
+        ctx.stroke();
+    },
+
+    end() {
+        state.isPainting = false;
+    },
+
+    fill() {
+        if (state.isFilling) {
+            ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+        }
+    }
+};
+
+// Tool functions
+const tools = {
+    setLineWidth(width) {
+        ctx.lineWidth = width;
+    },
+
+    setColor(color) {
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        elements.color.value = color;
+    },
+
+    toggleMode() {
+        state.isFilling = !state.isFilling;
+        elements.modeBtn.innerText = state.isFilling ? "Draw" : "Fill";
+    },
+
+    clear() {
+        ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    },
+
+    save() {
+        const url = elements.canvas.toDataURL();
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "myDrawing.png";
+        a.click();
+    },
+
+    eraser() {
+        tools.setColor("white");
+        state.isFilling = false;
+        elements.modeBtn.innerText = "Fill";
+    },
+
+    addText(event) {
+        const text = elements.textInput.value;
+        if (text !== "") {
+
+        ctx.save();
+        ctx.lineWidth = 1;
+        ctx.font = DEFAULT_FONT;
+        ctx.fillText(text, event.offsetX, event.offsetY);
+        ctx.restore();
+    }
+    },
+
+    loadImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const url = URL.createObjectURL(file);
+        const image = new Image();
+        image.src = url;
+        image.onload = () => {
+            ctx.drawImage(image, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+            elements.fileInput.value = null;
+        };
+    }
+};
+
+// Event Listeners
+const setupEventListeners = () => {
+    // Canvas events
+    elements.canvas.addEventListener("mousemove", drawing.move);
+    elements.canvas.addEventListener("mousedown", drawing.start);
+    elements.canvas.addEventListener("mouseup", drawing.end);
+    elements.canvas.addEventListener("mouseleave", drawing.end);
+    elements.canvas.addEventListener("click", drawing.fill);
+    elements.canvas.addEventListener("dblclick", tools.addText);
+
+    // Control events
+    elements.lineWidth.addEventListener("change", (e) => tools.setLineWidth(e.target.value));
+    elements.color.addEventListener("change", (e) => tools.setColor(e.target.value));
+    elements.colorOptions.forEach((color) => 
+        color.addEventListener("click", (e) => tools.setColor(e.target.dataset.color))
+    );
+
+    // Button events
+    elements.modeBtn.addEventListener("click", tools.toggleMode);
+    elements.eraserBtn.addEventListener("click", tools.eraser);
+    elements.clearBtn.addEventListener("click", tools.clear);
+    elements.saveBtn.addEventListener("click", tools.save);
+    elements.fileInput.addEventListener("change", tools.loadImage);
+};
+
+// Initialize
+setupEventListeners();
 

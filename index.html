@@ -7,7 +7,46 @@
     <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
-    <canvas></canvas>
-    <script src = "app.js"></script>
+    <main class="meme-maker">
+        <canvas id="canvas"></canvas>
+        
+        <section class="controls">
+            <div class="drawing-controls">
+                <input id="line-width" type="range" min="1" max="10" value="5" step="0.1" />
+                <input type="color" id="color" />
+            </div>
+
+            <div class="color-palette">
+                <div class="color-option" style="background-color: #1abc9c" data-color="#1abc9c"></div>
+                <div class="color-option" style="background-color: #3498db" data-color="#3498db"></div>
+                <div class="color-option" style="background-color: #34495e" data-color="#34495e"></div>
+                <div class="color-option" style="background-color: #27ae60" data-color="#27ae60"></div>
+                <div class="color-option" style="background-color: #8e44ad" data-color="#8e44ad"></div>
+                <div class="color-option" style="background-color: #f1c40f" data-color="#f1c40f"></div>
+                <div class="color-option" style="background-color: #e74c3c" data-color="#e74c3c"></div>
+                <div class="color-option" style="background-color: #95a5a6" data-color="#95a5a6"></div>
+                <div class="color-option" style="background-color: #d35400" data-color="#d35400"></div>
+                <div class="color-option" style="background-color: #bdc3c7" data-color="#bdc3c7"></div>
+                <div class="color-option" style="background-color: #2ecc71" data-color="#2ecc71"></div>
+                <div class="color-option" style="background-color: #e67e22" data-color="#e67e22"></div>
+            </div>
+
+            <div class="tools">
+                <button id="mode-btn" class="tool-btn">Fill</button>
+                <button id="eraser-btn" class="tool-btn">Eraser</button>
+                <button id="clear-btn" class="tool-btn">Clear</button>
+                <button id="save-btn" class="tool-btn">Save</button>
+            </div>
+
+            <div class="text-controls">
+                <input type="text" id="text" placeholder="Enter text..." />
+            </div>
+
+            <div class="file-controls">
+                <input type="file" id="file" accept="image/*" />
+            </div>
+        </section>
+    </main>
+    <script src="app.js"></script>
 </body>
 </html>
