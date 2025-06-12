@@ -30,18 +30,32 @@ const state = {
     isFilling: false
 };
 
+// Helper function to get correct mouse coordinates
+function getMousePos(canvas, event) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    return {
+        x: (event.clientX - rect.left) * scaleX,
+        y: (event.clientY - rect.top) * scaleY
+    };
+}
+
 // Drawing functions
 const drawing = {
     start(event) {
         state.isPainting = true;
+        const pos = getMousePos(elements.canvas, event);
         ctx.beginPath();
-        ctx.moveTo(event.offsetX, event.offsetY);
+        ctx.moveTo(pos.x, pos.y);
     },
 
     move(event) {
         if (!state.isPainting) return;
         
-        ctx.lineTo(event.offsetX, event.offsetY);
+        const pos = getMousePos(elements.canvas, event);
+        ctx.lineTo(pos.x, pos.y);
         ctx.stroke();
     },
 
@@ -94,13 +108,13 @@ const tools = {
     addText(event) {
         const text = elements.textInput.value;
         if (text !== "") {
-
-        ctx.save();
-        ctx.lineWidth = 1;
-        ctx.font = DEFAULT_FONT;
-        ctx.fillText(text, event.offsetX, event.offsetY);
-        ctx.restore();
-    }
+            const pos = getMousePos(elements.canvas, event);
+            ctx.save();
+            ctx.lineWidth = 1;
+            ctx.font = DEFAULT_FONT;
+            ctx.fillText(text, pos.x, pos.y);
+            ctx.restore();
+        }
     },
 
     loadImage(event) {
